@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#071b2c">
+<title>GEI Dam Academy — A'Dam Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@500;700;800&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{--bg:#071b2c;--frame:#0a2338;--panel:#0f2f47;--panel2:#123a57;--ink:#eaf6ff;--muted:#7fa7c7;--aqua:#22c7e8;--brass:#e8a33d;--good:#46d19c;--bad:#ff6b6b;--line:rgba(255,255,255,.10);--track:rgba(255,255,255,.08)}
+[data-theme="light"]{--bg:#eaf4ff;--frame:#fff;--panel:#f3f9ff;--panel2:#e6f1ff;--ink:#10263c;--muted:#5c7995;--aqua:#0891b2;--brass:#c9821a;--good:#1f9e6c;--bad:#e5484d;--line:rgba(14,36,56,.12);--track:rgba(14,36,56,.08)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg)}
+body{position:fixed;inset:0;font-family:"Nunito",system-ui,sans-serif;color:var(--ink)}
+button{font:inherit}a{color:inherit;text-decoration:none}.dispf{font-family:"Rajdhani","Nunito",sans-serif}.monof{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.phoneOuter{height:100dvh;display:flex;justify-content:center;align-items:center;background:var(--bg)}
+.appFrame{width:100%;max-width:428px;height:100dvh;background:var(--frame);overflow:hidden;display:flex;flex-direction:column}
+.topbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:calc(6px + env(safe-area-inset-top)) 12px 6px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brandRow{display:flex;align-items:center;gap:8px;min-width:0}.brandRow img{width:25px;height:25px;object-fit:contain;border-radius:7px;background:#fff}
+.brandText b{display:block;font-size:.82rem}.brandText span{display:block;font-size:.5rem;letter-spacing:.14em;color:var(--aqua);font-weight:700}
+.topActions{display:flex;gap:5px;align-items:center}
+.xpChip{font-size:.62rem;font-weight:700;border:1px solid var(--brass);color:var(--brass);border-radius:999px;padding:5px 9px;white-space:nowrap}
+.audioBtn,.themeBtn{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:1rem;display:grid;place-items:center;cursor:pointer}
+
+/* shop listing: internal scroll is the one justified exception to the no-scroll
+   game rule (Master Prompt §30) — this is a catalog, not gameplay. */
+.vaultScroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 10px 20px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
+.vaultScroll::-webkit-scrollbar{display:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;flex:0 0 auto}
+.vHero{text-align:center;padding:8px 8px 2px}
+.vHero .seal{font-size:2rem;line-height:1}
+.vHero h2{margin:4px 0 2px;font-size:1.15rem}
+.vHero p{margin:0;font-size:.72rem;color:var(--muted);font-weight:700}
+.eyebrow{font-size:.55rem;letter-spacing:.13em;color:var(--brass);font-weight:700}
+.vItem{display:flex;align-items:center;gap:10px}
+.vIcon{font-size:1.6rem;flex:0 0 auto}
+.vText{flex:1;min-width:0}
+.vText b{display:block;font-size:.86rem}
+.vText small{display:block;font-size:.64rem;color:var(--muted);font-weight:700;margin-top:2px;line-height:1.25}
+.vSide{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.vBadge{font-family:"IBM Plex Mono",monospace;font-size:.5rem;font-weight:700;letter-spacing:.08em;color:var(--good);border:1px solid var(--good);border-radius:999px;padding:3px 7px;white-space:nowrap}
+.vBadge.lockedB{color:var(--muted);border-color:var(--line)}
+.btnPrimary,.btnGhost{display:block;border:0;border-radius:10px;padding:7px 12px;font-family:"Rajdhani";font-weight:800;font-size:.72rem;cursor:pointer;text-align:center}
+.btnPrimary{background:linear-gradient(90deg,var(--aqua),var(--brass));color:#08202f}
+.btnPrimary:disabled{opacity:.4}
+.btnGhost{border:1px solid var(--line);color:var(--ink);background:transparent}
+.btnRow{display:flex;gap:6px}.btnRow>*{flex:1}
+.vSection{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:4px 2px 0}
+.vSection h3{margin:0;font-size:.95rem}
+.vSection small{font-size:.56rem;color:var(--muted);font-weight:700}
+
+/* skin hero previews — animated live palettes (Master Prompt §24) */
+.vPrev{flex:0 0 auto;width:76px;height:56px;border-radius:10px;position:relative;overflow:hidden;background:var(--pv-bg,#0a2338);border:1px solid var(--line)}
+.vPrev .pvWater{position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(90deg,var(--pv-aqua,#22c7e8),var(--pv-brass,#e8a33d));animation:pvWave 2.6s ease-in-out infinite;transform-origin:bottom}
+@keyframes pvWave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.4)}}
+.vPrev .pvDot{position:absolute;top:7px;left:7px;width:9px;height:9px;border-radius:50%;background:var(--pv-brass,#e8a33d);box-shadow:0 0 6px var(--pv-brass,#e8a33d)}
+.vPrev .pvWheel{position:absolute;right:5px;top:3px;font-size:.95rem;animation:pvSpin 6s linear infinite}
+@keyframes pvSpin{to{transform:rotate(360deg)}}
+.vPrev .pvFrame{position:absolute;inset:4px;border:1px solid rgba(255,255,255,.14);border-radius:7px;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.vPrev .pvWater,.vPrev .pvWheel{animation:none}}
+
+.videoStage{margin-top:8px;border-radius:12px;overflow:hidden;background:#000}
+.videoStage iframe{display:block;width:100%;aspect-ratio:16/9;border:0}
+
+/* confirm sheet (Master Prompt §18: full spend preview before deducting) */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(4,10,20,.82);display:none}
+.overlay.show{display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:min(430px,100%);background:var(--frame);border-radius:18px 18px 0 0;border-top:1px solid var(--line);padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sheet h3{margin:6px 0 2px;font-size:1.05rem}
+.sheet p{margin:0 0 10px;font-size:.72rem;color:var(--muted);font-weight:700;line-height:1.3}
+.spendRow{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:.72rem;font-weight:700}
+.spendRow b{font-family:"Rajdhani";font-size:.9rem}
+.spendRow.after b{color:var(--good)}
+.spendRow.after b.poor{color:var(--bad)}
+.sheet .btnRow{margin-top:10px}
+
+/* certificate (canonical rendering — snapshot identity, Master Prompt §21) */
+.certOverlay{position:fixed;inset:0;z-index:60;background:rgba(4,10,20,.86);display:none;align-items:center;justify-content:center;padding:16px}
+.certOverlay.show{display:flex}
+.certBox{width:min(430px,100%);max-height:92dvh;overflow-y:auto;background:var(--frame);border:1px solid var(--line);border-radius:18px;padding:14px;position:relative}
+.certClose{position:absolute;right:10px;top:10px;z-index:2;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;width:30px;height:30px;font-weight:700;cursor:pointer}
+.certPaper{text-align:center;border:5px double var(--brass);border-radius:16px;padding:22px 14px;background:linear-gradient(150deg,color-mix(in srgb,var(--aqua),transparent 92%),color-mix(in srgb,var(--brass),transparent 92%))}
+.certPaper .seal{font-size:2.4rem}
+.certPaper h3{font-family:"Rajdhani",sans-serif;font-size:1.25rem;margin:8px 0 4px}
+.certPaper .certName{font-family:"Rajdhani",sans-serif;font-size:1.65rem;font-weight:700;color:var(--brass);margin:8px 0;word-break:break-word}
+.certPaper p{margin:5px 0;font-size:.8rem;color:var(--muted)}
+.certStats{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0}
+.certStats span{font-family:"IBM Plex Mono",monospace;font-size:.58rem;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:var(--muted)}
+.certPaper .btnRow{margin-top:10px}
+@media print{
+  body *{visibility:hidden}
+  .certPaper,.certPaper *{visibility:visible}
+  .certPaper{position:fixed;inset:20px}
+}
+
+.footNote{margin-top:2px;text-align:center;font-size:.6rem;color:var(--muted)}
+.celebrateBurst{position:fixed;inset:0;pointer-events:none;z-index:70;display:none;overflow:hidden}
+.celebrateBurst.show{display:block}
+.spark{position:absolute;left:50%;top:46%;font-size:1.1rem;animation:geiSpark 850ms ease-out forwards}
+@keyframes geiSpark{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}12%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.2) rotate(180deg)}}
+.lockHero{text-align:center;padding:26px 14px}
+.lockHero .big{font-size:3rem;line-height:1}
+.lockHero h2{margin:10px 0 4px;font-size:1.2rem}
+.lockHero p{margin:0 0 14px;font-size:.78rem;color:var(--muted);font-weight:700}
+</style>
+<script>
+(function(){
+  try{
+    var raw=localStorage.getItem('gei-academy-state-v1');
+    var st=raw?JSON.parse(raw):null;
+    var name=st&&typeof st.name==='string'?st.name.trim():'';
+    if(!name){
+      document.documentElement.style.visibility='hidden';
+      location.replace('index.html?return=vault.html');
+      return;
+    }
+  }catch(e){}
+})();
+</script>
+<script src="js/gei-skins.js"></script>
+<script src="js/gei-game-audio.js"></script>
+<script id="gei-audio-canonical-bridge">
+(function(){
+'use strict';
+function unlock(){
+  try{
+    if(window.GEI_AUDIO_UNLOCK) window.GEI_AUDIO_UNLOCK();
+  }catch(e){}
+}
+['pointerdown','touchstart','mousedown','keydown'].forEach(function(type){
+  document.addEventListener(type,unlock,{capture:true,passive:true,once:true});
+});
+})();
+</script>
+<script src="js/gei-vault-economy-engine.js"></script>
+</head>
+<body>
+<div class="phoneOuter"><div class="appFrame">
+<header class="topbar"><a class="brandRow" href="index.html"><img src="https://assets.zyrosite.com/YZ9jg46Bljs5wOZR/yall-too-logo-vq2GKHxbTzr7g8b8b-O.png" alt="YallToo"><span class="brandText"><b class="dispf">GEI Dam Academy</b><span class="monof">A'DAM VAULT</span></span></a><div class="topActions"><span class="xpChip monof" id="xpChip">⭐ 0 XP</span><button class="audioBtn" id="soundBtn" type="button" aria-label="Sound on">🔊</button><button class="themeBtn" id="themeBtn" type="button">🌙</button></div></header>
+<main class="vaultScroll" id="vaultRoot" aria-live="polite"></main>
+<div class="celebrateBurst" id="celebrateBurst" aria-hidden="true"></div>
+</div></div>
+
+<div class="overlay" id="confirmOverlay" role="dialog" aria-modal="true"><div class="sheet" id="confirmSheet"></div></div>
+<div class="certOverlay" id="certOverlay" role="dialog" aria-modal="true"><div class="certBox"><button type="button" class="certClose" id="certClose" aria-label="Close">✕</button><div id="certBody"></div></div></div>
+
+<script id="gei-vault-ui">
+(function(){
+'use strict';
+var ECON=window.GEI_ECON,SKINS=window.GEI_SKINS;
+var $=function(id){return document.getElementById(id)};
+var root=$('vaultRoot');
+var VIDEO='FetuY7WFS3M';
+
+/* ---- sound: same canonical engine + mute flag as the level pages ---- */
+var SOUND_KEY='gei-academy-sound-enabled-v1',enabled=true;
+try{var v=localStorage.getItem(SOUND_KEY);if(v!==null)enabled=v!=='0';}catch(e){}
+var rawSound=window.sound;
+function play(k){if(enabled&&typeof rawSound==='function'){try{rawSound(k)}catch(e){}}}
+var sb=$('soundBtn');
+function paintSound(){sb.textContent=enabled?'🔊':'';sb.setAttribute('aria-label',enabled?'Sound on':'Sound off');}
+paintSound();
+sb.onclick=function(){enabled=!enabled;try{localStorage.setItem(SOUND_KEY,enabled?'1':'0')}catch(e){}paintSound();if(enabled)play('click');};
+
+/* ---- theme (canonical state) ---- */
+var themeBtn=$('themeBtn');
+function paintTheme(t){themeBtn.textContent=t==='light'?'☀️':'🌙';}
+themeBtn.onclick=function(){var s=ECON.read();s.theme=s.theme==='light'?'dark':'light';ECON.write(s);document.documentElement.dataset.theme=s.theme==='light'?'light':'dark';paintTheme(s.theme);play('click');};
+
+/* ---- visual burst (not audio) ---- */
+function burst(finale){
+  var host=$('celebrateBurst');if(!host)return;host.innerHTML='';
+  var icons=finale?['✨','⭐','💧','','🎉']:['','✨','⭐'];
+  for(var i=0;i<(finale?18:8);i++){
+    var x=document.createElement('span');x.className='spark';x.textContent=icons[i%icons.length];
+    x.style.setProperty('--x',(Math.random()*280-140)+'px');
+    x.style.setProperty('--y',(Math.random()*220-120)+'px');
+    x.style.animationDelay=(Math.random()*80)+'ms';host.appendChild(x);
+  }
+  host.classList.add('show');setTimeout(function(){host.classList.remove('show');host.innerHTML='';},950);
+}
+
+function esc(s){return String(s).replace(/[&<>\"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+
+var state=ECON.read();
+document.documentElement.dataset.theme=state.theme==='light'?'light':'dark';
+paintTheme(state.theme);
+function paintXp(){$('xpChip').textContent='⭐ '+Number(state.xp||0)+' XP';}
+paintXp();
+
+/* ---- locked state (Master Prompt §17) ---- */
+if(!ECON.unlocked()){
+  var last=0;for(var n=1;n<=5;n++){if(state.completed.indexOf(n)!==-1)last=n;}
+  var cta,lastHref;
+  if(last===5){cta='← Back to Level 6';lastHref='level6.html';}
+  else if(last>0){cta='→ Continue: Level '+(last+1);lastHref='level'+(last+1)+'.html';}
+  else{cta='→ Start Level 1';lastHref='level1.html';}
+  root.innerHTML=
+    '<section class="card lockHero"><div class="big">🔒</div>'+
+    '<h2 class="dispf">VAULT LOCKED</h2>'+
+    '<p>Complete all six foundation levels to unlock your certificate, A\u2019Dam Video Vault, skins and rewards.</p>'+
+    '<div class="btnRow"><a class="btnGhost" href="index.html">🏠 Dashboard</a><a class="btnPrimary" href="'+lastHref+'">'+cta+'</a></div>'+
+    '</section>';
+  return;
+}
+
+/* ---- unlocked: vault is open (Master Prompt §16–18) ---- */
+ECON.ensureCert(state);
+state=ECON.read();
+
+/* premium vault fanfare on first real gesture (entry moment, plays once) */
+var vaultEntryPlayed=false;
+function vaultEntry(){
+  if(vaultEntryPlayed)return;vaultEntryPlayed=true;
+  ['pointerdown','touchstart','mousedown','keydown'].forEach(function(t){document.removeEventListener(t,vaultEntry,{capture:true})});
+  play('vault');
+}
+['pointerdown','touchstart','mousedown','keydown'].forEach(function(t){document.addEventListener(t,vaultEntry,{capture:true,passive:true})});
+
+function skinPrev(id){
+  var p=id?SKINS.preview(id):{'--aqua':'#22c7e8','--brass':'#e8a33d','--frame':'#0a2338'};
+  return '<div class="vPrev" style="--pv-aqua:'+p['--aqua']+';--pv-brass:'+p['--brass']+';--pv-bg:'+p['--frame']+'">'+
+    '<span class="pvFrame"></span><span class="pvDot"></span><span class="pvWheel">⚙️</span><div class="pvWater"></div></div>';
+}
+
+function render(){
+  state=ECON.read();paintXp();
+  var owned=state.rewards.ownedVaultItems;
+  var eq=state.rewards.equippedSkin||'';
+  var h='';
+  h+='<section class="card vHero"><div class="seal">🏆</div>'+
+     '<span class="eyebrow monof">MASTER BUILDER REWARDS</span>'+
+     '<h2 class="dispf">Welcome, '+esc(state.name||'Explorer')+'</h2>'+
+     '<p>The foundation is complete. ⭐ 900 XP = one item — every reward is earned individually.</p></section>';
+
+  /* certificate — earned on Level 6 completion, rendered from snapshot */
+  h+='<section class="card vItem"><span class="vIcon">🎓</span>'+
+     '<div class="vText"><b>Official Certificate</b><small>Master Builder — earned by completing Level 6.</small></div>'+
+     '<div class="vSide"><span class="vBadge">EARNED ✓</span><button type="button" class="btnGhost" id="viewCert">VIEW</button></div></section>';
+
+  /* A'Dam video vault */
+  var videoOwned=owned.indexOf('video')!==-1;
+  h+='<section class="card"><div class="vItem"><span class="vIcon">🎬</span>'+
+     '<div class="vText"><b>A\u2019Dam Video Vault</b><small>The exclusive GEI video — the whole water-control build, told in motion.</small></div>'+
+     '<div class="vSide">'+(videoOwned
+       ?'<span class="vBadge">OWNED ✓</span>'
+       :'<button type="button" class="btnPrimary vBuy" data-id="video">⭐ 900 XP</button>')+
+     '</div></div>';
+  if(videoOwned){
+    h+='<div class="videoStage"><iframe src="https://www.youtube.com/embed/'+VIDEO+'?playsinline=1" title="A\u2019Dam Video Vault" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+  }else{
+    h+='<p style="margin:8px 0 0;font-size:.66rem;color:var(--muted);font-weight:700">🔒 Unlock to play the full exclusive video.</p>';
+  }
+  h+='</section>';
+
+  /* skins — real visual game states */
+  h+='<div class="vSection"><h3 class="dispf">Skins</h3><small class="monof">EQUIPPING CHANGES THE GAME</small></div>';
+  h+='<section class="card vItem">'+skinPrev('')+
+     '<div class="vText"><b>Classic</b><small>The original aqua &amp; brass finish. Always free.</small></div>'+
+     '<div class="vSide">'+(eq===''?'<span class="vBadge">EQUIPPED ✓</span>':'<button type="button" class="btnGhost vEquip" data-id="">USE CLASSIC</button>')+
+     '</div></section>';
+  ECON.CATALOG.filter(function(it){return it.kind==='skin'}).forEach(function(it){
+    var isOwned=owned.indexOf(it.id)!==-1;
+    var isEq=eq===it.id;
+    h+='<section class="card vItem">'+skinPrev(it.id)+
+       '<div class="vText"><b>'+esc(it.name)+'</b><small>'+esc(it.desc)+'</small></div>'+
+       '<div class="vSide">'+
+       (isEq?'<span class="vBadge">EQUIPPED ✓</span>':
+        isOwned?'<button type="button" class="btnPrimary vEquip" data-id="'+it.id+'">EQUIP</button>':
+        '<span class="vBadge lockedB">LOCKED</span><button type="button" class="btnPrimary vBuy" data-id="'+it.id+'">⭐ 900 XP</button>')+
+       '</div></section>';
+  });
+
+  /* rewards vault — the player's owned items */
+  h+='<div class="vSection"><h3 class="dispf">Rewards Vault</h3><small class="monof">'+owned.length+' ITEM'+(owned.length===1?'':'S')+' OWNED</small></div>';
+  h+='<section class="card vItem"><span class="vIcon">📦</span>'+
+     '<div class="vText"><b>Your collection</b><small>Official Certificate · '+(videoOwned?'A\u2019Dam Video':'video pending')+' · '+(owned.filter(function(i){return i!=='video'}).length)+' skin(s)</small></div></section>';
+
+  /* transaction ledger (client-local; server-verified entitlements stay empty — §20) */
+  var tx=state.economy.transactions;
+  if(tx.length){
+    h+='<div class="vSection"><h3 class="dispf">XP Ledger</h3><small class="monof">'+state.economy.xpSpent+' XP SPENT</small></div>';
+    tx.slice(-3).reverse().forEach(function(t){
+      h+='<section class="card vItem" style="padding:8px 10px"><span class="vIcon" style="font-size:1rem">🧾</span>'+
+         '<div class="vText"><b>'+esc(ECON.item(t.item)?ECON.item(t.item).name:t.item)+'</b><small>−'+t.cost+' XP · '+t.xpBefore+' → '+t.xpAfter+' XP · '+new Date(t.at).toLocaleDateString()+'</small></div></section>';
+    });
+  }
+  h+='<p class="footNote">900 XP = one item · Missions 07–38 &amp; premium XP arrive after the foundation.</p>';
+  root.innerHTML=h;
+
+  /* bind */
+  $('viewCert').onclick=function(){play('click');openCert();};
+  root.querySelectorAll('.vBuy').forEach(function(b){b.onclick=function(){play('click');openConfirm(b.getAttribute('data-id'));};});
+  root.querySelectorAll('.vEquip').forEach(function(b){
+    b.onclick=function(){
+      var id=b.getAttribute('data-id');
+      var r=ECON.equip(state,id);
+      if(r.ok){play('save');burst(false);render();}
+    };
+  });
+}
+
+/* ---- confirm sheet (Master Prompt §18) ---- */
+function openConfirm(id){
+  var it=ECON.item(id);if(!it)return;
+  state=ECON.read();
+  var before=Number(state.xp),after=before-it.cost;
+  var poor=after<0;
+  $('confirmSheet').innerHTML=
+    '<span class="eyebrow monof">CONFIRM PURCHASE · A\u2019DAM VAULT</span>'+
+    '<h3 class="dispf">'+it.icon+' '+esc(it.name)+'</h3>'+
+    '<p>'+esc(it.desc)+'</p>'+
+    '<div class="spendRow"><span>ITEM COST</span><b>−'+it.cost+' XP</b></div>'+
+    '<div class="spendRow"><span>CURRENT XP</span><b>⭐ '+before+'</b></div>'+
+    '<div class="spendRow after"><span>XP AFTER PURCHASE</span><b class="'+(poor?'poor':'')+'">⭐ '+after+'</b></div>'+
+    '<div class="btnRow"><button type="button" class="btnGhost" id="cfCancel">CANCEL</button>'+
+    '<button type="button" class="btnPrimary" id="cfGo"'+(poor?' disabled':'')+'>CONFIRM · SPEND '+it.cost+' XP</button></div>';
+  $('confirmOverlay').classList.add('show');
+  $('cfCancel').onclick=function(){play('click');$('confirmOverlay').classList.remove('show');};
+  $('cfGo').onclick=function(){
+    var r=ECON.buy(state,it.id);
+    if(r.ok){
+      $('confirmOverlay').classList.remove('show');
+      play('fanfare');burst(true);render();
+    }else{
+      play('wrong');
+    }
+  };
+}
+
+/* ---- certificate overlay (snapshot identity — never rewritten by renames) ---- */
+function openCert(){
+  var c=state.rewards.certificate||{};
+  var d=c.date?new Date(c.date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}):'—';
+  $('certBody').innerHTML=
+    '<div class="certPaper">'+
+    '<div class="seal">🏆</div>'+
+    '<div class="monof" style="font-size:.6rem;letter-spacing:.14em;color:var(--brass)">YALL TOO · GEI ACADEMY</div>'+
+    '<h3 class="dispf">Certificate of Completion</h3>'+
+    '<p>This certifies that</p>'+
+    '<div class="certName">'+esc(c.name||'Explorer')+'</div>'+
+    '<p>has completed the<br><strong>Six-Day GEI Foundation Academy.</strong></p>'+
+    '<div class="certStats"><span>⭐ '+Number(c.xp||0)+' XP</span><span>🏆 MASTER BUILDER</span><span>📅 '+d+'</span><span>ID '+esc(c.id||'—')+'</span></div>'+
+    '<div class="btnRow"><button type="button" class="btnGhost" id="certX">CLOSE</button><button type="button" class="btnPrimary" id="certPrint">⬇️ Save Certificate</button></div>'+
+    '</div>';
+  $('certOverlay').classList.add('show');
+  $('certX').onclick=function(){play('click');$('certOverlay').classList.remove('show');};
+  $('certPrint').onclick=function(){play('save');setTimeout(function(){window.print()},150);};
+  play('certificate');
+}
+$('certClose').onclick=function(){play('click');$('certOverlay').classList.remove('show');};
+
+render();
+if(new URLSearchParams(location.search).get('tab')==='certificate')openCert();
+})();
+</script>
+</body>
+</html>
