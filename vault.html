@@ -152,6 +152,16 @@ function unlock(){
 var ECON=window.GEI_ECON,SKINS=window.GEI_SKINS;
 var $=function(id){return document.getElementById(id)};
 var root=$('vaultRoot');
+
+/* Deployment guard: a missing economy engine must show a clear message,
+   never a blank page (Master Prompt §14 — never crash gameplay). */
+if(!window.GEI_ECON){
+  root.innerHTML='<section class="card lockHero"><div class="big">⚠️</div>'+
+    '<h2 class="dispf">VAULT ENGINE NOT LOADED</h2>'+
+    '<p>js/gei-vault-economy-engine.js is missing or failed to load. Check that the js/ folder exists in the deployment.</p>'+
+    '<div class="btnRow"><a class="btnGhost" href="index.html">🏠 Dashboard</a></div></section>';
+  return;
+}
 var VIDEO='FetuY7WFS3M';
 
 /* ---- sound: same canonical engine + mute flag as the level pages ---- */
@@ -220,7 +230,7 @@ function vaultEntry(){
 ['pointerdown','touchstart','mousedown','keydown'].forEach(function(t){document.addEventListener(t,vaultEntry,{capture:true,passive:true})});
 
 function skinPrev(id){
-  var p=id?SKINS.preview(id):{'--aqua':'#22c7e8','--brass':'#e8a33d','--frame':'#0a2338'};
+  var p=(id&&window.GEI_SKINS)?SKINS.preview(id):{'--aqua':'#22c7e8','--brass':'#e8a33d','--frame':'#0a2338'};
   return '<div class="vPrev" style="--pv-aqua:'+p['--aqua']+';--pv-brass:'+p['--brass']+';--pv-bg:'+p['--frame']+'">'+
     '<span class="pvFrame"></span><span class="pvDot"></span><span class="pvWheel">⚙️</span><div class="pvWater"></div></div>';
 }

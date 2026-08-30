@@ -165,6 +165,17 @@ button{font-family:inherit}
 </style>
 <script src="js/gei-skins.js"></script>
 <script src="js/gei-game-audio.js"></script>
+<script id="gei-audio-engine-guard">
+(function(){
+  /* Deployment guard (NOT a second audio engine): if the canonical engine
+     file 404s (e.g. js/ folder missing), gameplay must never crash (§14). */
+  if(typeof window.sound!=='function'){
+    window.sound=function(k){try{if(!window.__GEI_AUDIO_GUARD_WARNED__){window.__GEI_AUDIO_GUARD_WARNED__=1;console.warn('[GEI audio] shared engine (js/gei-game-audio.js) not loaded — all sounds skipped. Check the js/ folder.'+(k?' ('+k+')':''))}}catch(e){}};
+    window.GEI_AUDIO_UNLOCK=function(){};
+  }
+})();
+</script>
+
 <script id="gei-audio-canonical-bridge">
 (function(){
 'use strict';
@@ -439,7 +450,7 @@ els.save.addEventListener('click',function(){
   var n=els.name.value.trim();
   if(!n){els.hello.textContent='Please choose a username first.';els.name.focus();return}
   state=readState();state.name=n;state.avatar=state.avatar||AVATARS[0];writeState(state);
-  sound('save');confetti(90);render();
+  sound('save');try{confetti(90)}catch(e){}render();
   try{var ret=new URLSearchParams(location.search).get('return');if(ret&&/^level[1-6]\.html$/.test(ret))location.replace(ret)}catch(e){}
 });
 els.name.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();els.save.click()}});

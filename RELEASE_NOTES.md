@@ -60,9 +60,45 @@ anchored passes and verified with automated DOM tests.
   no-scroll game rule (§30): it is a catalog, not gameplay. All gameplay screens
   remain fixed-frame, no-scroll.
 
-### D. Verification (Master Prompt §38 — mandatory distinction)
+### D. Deployment hardening (2026-08-30 — "dashboard buttons don't work" incident)
 
-**CODE VERIFIED ✅ — 174/174 automated assertions, all passing:**
+The first live deployment uploaded the three JS files to the **repo root**
+instead of the **`js/` subfolder**, so every `<script src="js/…">` tag 404'd.
+On the dashboard that turned into `ReferenceError: sound is not defined`
+mid-handler — tabs couldn't switch and the username save never re-rendered
+the page; `vault.html` rendered blank (`GEI_ECON` undefined).
+
+Hardening added (this is what makes a wrong-folder upload non-fatal):
+- **`gei-audio-engine-guard`** (all 8 pages): if the canonical engine file
+  404s, a no-op `sound()`/`GEI_AUDIO_UNLOCK()` is installed with a one-time
+  `console.warn` diagnostic. This is a deployment guard, **not** a second
+  audio engine — it produces no sound and never overrides a loaded engine.
+- **`vault.html`**: a missing economy engine shows a clear
+  "VAULT ENGINE NOT LOADED" card with a way back, instead of a blank page.
+- **`index.html`**: `confetti()` is wrapped in try/catch so a visual effect
+  can never block the functional `render()` (found while reproducing the
+  incident under jsdom, which has no canvas).
+- New test suite `deploy404.test.js` (16 assertions) pins this regression:
+  with the engines absent, dashboard buttons work, level gameplay works,
+  the vault shows the diagnostic, and zero uncaught page errors occur.
+
+**The actual fix for the live site** = put the three files in `js/`
+(see deployment steps below); the guards are defense-in-depth.
+
+**Deployment steps (GitHub web UI, no git needed):**
+1. In the repo, click the **+** next to "Add file" → **Create new file**.
+2. Name it `js/gei-game-audio.js` (the slash creates the `js` folder),
+   paste the file contents, commit.
+3. Repeat for `js/gei-skins.js` and `js/gei-vault-economy-engine.js`.
+4. Delete the three root-level copies (open each → 🗑 → **Delete this file** → commit).
+5. Wait ~1 minute for GitHub Pages to rebuild, then verify:
+   `https://jawa-dam.github.io/God-is-a-mountain/js/gei-game-audio.js` → **200**
+   (it was 404; the root-level copy was 200 at the wrong path).
+   Or via git: `git clone … && mkdir js && git mv gei-*.js js/ && git commit -am "fix: js/ folder" && git push`.
+
+### E. Verification (Master Prompt §38 — mandatory distinction)
+
+**CODE VERIFIED ✅ — 190/190 automated assertions, all passing:**
 - Fresh-player Level 1 journey (incl. deliberate wrong answer, retry window,
   +150 XP, completion card shows real stats) — 106 assertions (`smoke.test.js`)
 - Answer randomization across 10 renders + per-question option integrity
@@ -76,7 +112,7 @@ anchored passes and verified with automated DOM tests.
 - Vault: locked state, gate, legacy certificate issuance, full purchase math
   (900→0, ledger, disabled confirm when broke, no deduction without confirm),
   buy→equip→reskin→classic flow, cross-page skin application,
-  certificate snapshot fidelity under rename, dashboard→vault routing — 38 assertions (`vault.test.js`)
+  certificate snapshot fidelity under rename, dashboard→vault routing — 38 assertions (`vault.test.js`); missing-engine deployment regression — 16 assertions (`deploy404.test.js`)
 
 **PACKAGE VERIFIED ✅** — `SHA256SUMS.txt` covers the exact 13 release files;
 zip built from those files (not from memory).
@@ -86,7 +122,7 @@ zip built from those files (not from memory).
 Android + iPhone (real speakers, real autoplay policy). The stubbed-Web-Audio
 tests prove the *code path*, not the device output — per §38 we say so plainly.
 
-### E. Suggested device test script (next session)
+### F. Suggested device test script (next session)
 
 1. 🔊 ON: tap (click) · correct (correct) · wrong (womp) · next (save) ·
    level complete (fanfare) · Level 6 (fanfare + premium certificate fanfare) ·
@@ -95,7 +131,7 @@ tests prove the *code path*, not the device output — per §38 we say so plainl
 3. Kill the app mid-level, reopen → progress intact.
 4. Save name with `?return=` link → lands back on the intended level.
 
-### F. Out of scope this pass (per Master Prompt §40 — don't jump ahead)
+### G. Out of scope this pass (per Master Prompt §40 — don't jump ahead)
 
 Animated skin environments/particles beyond palette reskin (Phase 7 depth),
 certificate PDF export (printable HTML is in), Missions 07–38,

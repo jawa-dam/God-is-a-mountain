@@ -100,6 +100,17 @@ button{font:inherit}a{color:inherit;text-decoration:none}.dispf{font-family:"Raj
 </style>
 <script src="js/gei-skins.js"></script>
 <script src="js/gei-game-audio.js"></script>
+<script id="gei-audio-engine-guard">
+(function(){
+  /* Deployment guard (NOT a second audio engine): if the canonical engine
+     file 404s (e.g. js/ folder missing), gameplay must never crash (§14). */
+  if(typeof window.sound!=='function'){
+    window.sound=function(k){try{if(!window.__GEI_AUDIO_GUARD_WARNED__){window.__GEI_AUDIO_GUARD_WARNED__=1;console.warn('[GEI audio] shared engine (js/gei-game-audio.js) not loaded — all sounds skipped. Check the js/ folder.'+(k?' ('+k+')':''))}}catch(e){}};
+    window.GEI_AUDIO_UNLOCK=function(){};
+  }
+})();
+</script>
+
 
 <script id="gei-audio-canonical-bridge">
 (function(){

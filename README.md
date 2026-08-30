@@ -60,7 +60,7 @@ Equipping changes background, panels, buttons, gauge, fills and accents on
 
 ## Verification status (Master Prompt §38)
 
-- **CODE VERIFIED** ✅ — 174 automated DOM assertions (fresh-player journey,
+- **CODE VERIFIED** ✅ — 190 automated DOM assertions (fresh-player journey,
   answer randomization, lock screens, username gate, state migration,
   audio runtime path with stubbed Web Audio, vault purchase/equip flows,
   certificate snapshot fidelity). See `RELEASE_NOTES.md`.
