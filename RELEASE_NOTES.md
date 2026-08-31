@@ -1,9 +1,7 @@
 # GEI Dam Academy — Release Notes
 ## Foundation Pass · 2026-08-30
 
-Built from the approved full audit (`Claude audit.txt`) and the Master
-Production Build Prompt. Every change below was applied in controlled,
-anchored passes and verified with automated DOM tests.
+Built from the approved full audit (`Claude audit.txt`) and the Master Production Build Prompt. Every change below was applied in controlled, anchored passes and verified with automated DOM tests.
 
 ---
 
@@ -25,114 +23,50 @@ anchored passes and verified with automated DOM tests.
 ### B. New canonical files
 
 1. **`js/gei-game-audio.js`** — the one audio engine (Master Prompt §10–14)
-   - `window.sound(kind)` + `window.GEI_AUDIO_UNLOCK()`
-   - Canonical kinds: `click, correct, wrong, save, level-complete, fanfare, certificate, vault`
-   - Mobile-safe: no `AudioContext` before first real gesture; `resume()` on unlock;
-     pre-gesture requests are silently skipped (never a crash, never fake "audio works")
-   - Master-bus gain with headroom; unknown kinds → `console.warn()` once
-   - Single-instance guard (`__GEI_AUDIO_ENGINE__`)
-   - Event map: TAP→click · CORRECT→correct · WRONG→gentle womp · SAVE/NEXT→save ·
-     LEVEL COMPLETE→level-complete (+ premium certificate fanfare on the Level 6 finale) ·
-     VAULT entry→vault · purchase→fanfare
 2. **`js/gei-vault-economy-engine.js`** — canonical vault economy (§16–18, §20)
-   - Permanent rule: **900 XP = exactly one item**; no bulk unlocks, ever
-   - Spend flow: name + description + cost + current XP + XP after + explicit CONFIRM
-   - Certificate is **earned free** on Level 6 completion (per §21's explicit
-     unlock condition) and rendered from the completion snapshot
-   - `economy.entitlements` reserved for server-verified purchases — client code
-     never populates it (§20: localStorage is not trusted for payment)
 3. **`js/gei-skins.js`** — canonical skin system (§23)
-   - 6 skins (Mountain, Hot Pink, Baby Blue, Academic, Blueprint, Obsidian Premium)
-   - Real visual states: background, frame, panels, buttons, gauge, fills, accents —
-     applied on dashboard, all 6 levels, and the vault
-   - Hero previews in the vault show each skin's live animated palette before purchase
+4. **`js/gei-paypal.js`** — browser-side PayPal commerce bridge. Contains no secret; calls server endpoints and caches only server-returned entitlement snapshots in the existing `gei-academy-state-v1` object.
+5. **`api/paypal/products.js`** — server-authoritative product catalog: Discovery $10, Builder $25, Master Blueprint $69.
+6. **`api/paypal/paypal-client.js`** — server-only PayPal OAuth, order, capture, and webhook-signature verification client.
+7. **`api/paypal/index.js`** — create-order, capture-order, entitlement, health, and webhook handlers.
+8. **`api/paypal/config.js`** — browser-safe endpoint returning only public client ID + sandbox/live environment.
+9. **`api/paypal/handler.js` / `routes.example.js`** — deployment routing examples.
+10. **`api/paypal/.env.example`** and **`SECURITY.md`** — deployment/secrets guidance.
 
-### C. Business-rule decisions made (please confirm)
+### C. PayPal integration boundary
 
-- **Certificate = earned free at Level 6 completion** (prompt §21 states the unlock
-  condition is Level 6 completion). **Video + each skin = 900 XP purchases.**
-- **XP is one pool**: purchasing deducts from the same `xp` the Academy tracks
-  (prompt §4 forbids competing XP systems). A foundation run earns 900 XP total,
-  which is exactly one vault item — matching the "LEARN → EARN → … → PURCHASE XP"
-  model where continued engagement (Missions 07–38) and future real-money XP
-  funding further purchases. The XP ledger in the vault shows every transaction.
-- **Vault shop list scrolls internally** — the single justified exception to the
-  no-scroll game rule (§30): it is a catalog, not gameplay. All gameplay screens
-  remain fixed-frame, no-scroll.
+- Existing XP vault rules remain unchanged: **900 XP = exactly one item**.
+- PayPal purchases are separate from XP purchases.
+- `economy.entitlements` remains reserved for **server-verified** purchase state.
+- The browser never receives `PAYPAL_CLIENT_SECRET` or `PAYPAL_WEBHOOK_ID`.
+- Server validates product ID, amount, and currency against the authoritative catalog before granting access.
+- PayPal webhook signatures are verified through PayPal before accepted webhook events are processed.
+- The frontend loads the PayPal JS SDK only after asking the server for the public client ID/environment.
+- PayPal's current JavaScript SDK guidance recommends loading the SDK from PayPal and using the current SDK for new integrations. citeturn371109search0turn371109search10
 
-### D. Deployment hardening (2026-08-30 — "dashboard buttons don't work" incident)
+### D. Important deployment limitation
 
-The first live deployment uploaded the three JS files to the **repo root**
-instead of the **`js/` subfolder**, so every `<script src="js/…">` tag 404'd.
-On the dashboard that turned into `ReferenceError: sound is not defined`
-mid-handler — tabs couldn't switch and the username save never re-rendered
-the page; `vault.html` rendered blank (`GEI_ECON` undefined).
+The game is static-first. GitHub Pages can host the HTML/JS, but it cannot execute the Node handlers under `api/paypal/`.
 
-Hardening added (this is what makes a wrong-folder upload non-fatal):
-- **`gei-audio-engine-guard`** (all 8 pages): if the canonical engine file
-  404s, a no-op `sound()`/`GEI_AUDIO_UNLOCK()` is installed with a one-time
-  `console.warn` diagnostic. This is a deployment guard, **not** a second
-  audio engine — it produces no sound and never overrides a loaded engine.
-- **`vault.html`**: a missing economy engine shows a clear
-  "VAULT ENGINE NOT LOADED" card with a way back, instead of a blank page.
-- **`index.html`**: `confetti()` is wrapped in try/catch so a visual effect
-  can never block the functional `render()` (found while reproducing the
-  incident under jsdom, which has no canvas).
-- New test suite `deploy404.test.js` (16 assertions) pins this regression:
-  with the engines absent, dashboard buttons work, level gameplay works,
-  the vault shows the diagnostic, and zero uncaught page errors occur.
+The included server adapter stores captures and entitlements **in memory for development only**. It is intentionally not described as production-grade durable payment storage. Before Live money is accepted, replace that adapter with a persistent database and bind entitlements to an authenticated account/player ID rather than the editable display name.
 
-**The actual fix for the live site** = put the three files in `js/`
-(see deployment steps below); the guards are defense-in-depth.
+### E. Verification status
 
-**Deployment steps (GitHub web UI, no git needed):**
-1. In the repo, click the **+** next to "Add file" → **Create new file**.
-2. Name it `js/gei-game-audio.js` (the slash creates the `js` folder),
-   paste the file contents, commit.
-3. Repeat for `js/gei-skins.js` and `js/gei-vault-economy-engine.js`.
-4. Delete the three root-level copies (open each → 🗑 → **Delete this file** → commit).
-5. Wait ~1 minute for GitHub Pages to rebuild, then verify:
-   `https://jawa-dam.github.io/God-is-a-mountain/js/gei-game-audio.js` → **200**
-   (it was 404; the root-level copy was 200 at the wrong path).
-   Or via git: `git clone … && mkdir js && git mv gei-*.js js/ && git commit -am "fix: js/ folder" && git push`.
+**CODE STRUCTURE VERIFIED ✅** — PayPal files were added on branch `feature/paypal-commerce`; existing Academy economy engine remains intact.
 
-### E. Verification (Master Prompt §38 — mandatory distinction)
+**PAYPAL LIVE CHECKOUT VERIFIED ❌** — cannot be honestly marked complete until a deployed server has real PayPal Sandbox credentials, a reachable API endpoint, and an end-to-end Sandbox transaction/webhook test.
 
-**CODE VERIFIED ✅ — 190/190 automated assertions, all passing:**
-- Fresh-player Level 1 journey (incl. deliberate wrong answer, retry window,
-  +150 XP, completion card shows real stats) — 106 assertions (`smoke.test.js`)
-- Answer randomization across 10 renders + per-question option integrity
-- Lock screens, username gates (levels + vault), `?return=` destination
-- B4 regression: dashboard write preserves `level6Tasks` + full state
-- Audio runtime path (stubbed Web Audio API emulating mobile autoplay):
-  no context pre-gesture → gesture → unlock → resume → running; exact note
-  sequences for all 8 canonical kinds; unknown-kind diagnostics;
-  mute ON = one sound per event, mute OFF = zero sounds;
-  full Level 6 finale = exactly 51 notes (no double-firing) — 30 assertions (`audio.test.js`)
-- Vault: locked state, gate, legacy certificate issuance, full purchase math
-  (900→0, ledger, disabled confirm when broke, no deduction without confirm),
-  buy→equip→reskin→classic flow, cross-page skin application,
-  certificate snapshot fidelity under rename, dashboard→vault routing — 38 assertions (`vault.test.js`); missing-engine deployment regression — 16 assertions (`deploy404.test.js`)
+**DEVICE VERIFIED ❌** — physical Android/iPhone checkout behavior still needs a device pass.
 
-**PACKAGE VERIFIED ✅** — `SHA256SUMS.txt` covers the exact 13 release files;
-zip built from those files (not from memory).
+**PRODUCTION PAYMENT STORAGE VERIFIED ❌** — persistent entitlement storage is still a required deployment step.
 
-**LIVE DEPLOYMENT VERIFIED ❌** — not deployed yet.
-**DEVICE VERIFIED ❌** — audio must still be confirmed on a physical
-Android + iPhone (real speakers, real autoplay policy). The stubbed-Web-Audio
-tests prove the *code path*, not the device output — per §38 we say so plainly.
+---
 
-### F. Suggested device test script (next session)
+### F. Deployment checklist
 
-1. 🔊 ON: tap (click) · correct (correct) · wrong (womp) · next (save) ·
-   level complete (fanfare) · Level 6 (fanfare + premium certificate fanfare) ·
-   vault entry (premium vault fanfare) · purchase (big fanfare)
-2. 🔇 OFF: repeat all events → zero sound.
-3. Kill the app mid-level, reopen → progress intact.
-4. Save name with `?return=` link → lands back on the intended level.
-
-### G. Out of scope this pass (per Master Prompt §40 — don't jump ahead)
-
-Animated skin environments/particles beyond palette reskin (Phase 7 depth),
-certificate PDF export (printable HTML is in), Missions 07–38,
-secure backend + real-money purchases (Phase 9–10), Play Store packaging (Phase 11).
+1. Deploy `/api/paypal` to a Node/serverless host and route the `/api/paypal/*` endpoints.
+2. Configure `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENVIRONMENT=sandbox`, and `GEI_PAYPAL_VERSION=0.1.0` as server environment variables.
+3. Replace the development in-memory adapter with a persistent database.
+4. Create/register the PayPal Sandbox webhook and test completed captures.
+5. Test all three products and verify entitlement persistence after a server restart/redeploy.
+6. Only then switch `PAYPAL_ENVIRONMENT=live` and perform a controlled real-money smoke test.

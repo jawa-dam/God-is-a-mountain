@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/paypal/handler.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/paypal/(.*)", "dest": "/api/paypal/handler.js" }
+  ]
+}
